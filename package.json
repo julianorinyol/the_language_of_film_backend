@@ -7,9 +7,9 @@
     "express": "^4.17.1"
   },
   "scripts": {
-    "start": "tsc && node dist/app.js",
-    "build": "tsc",
-    "dev": "nodemon app.js",
+    "start": "node dist/app.js",
+    "build": "rm -rf ./dist/ && tsc",
+    "dev": "nodemon",
     "test": "jest",
     "test:watch": "jest --watch"
   },
@@ -34,5 +34,18 @@
       "js",
       "json"
     ]
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "**/*.test.ts",
+      "**/*.spec.ts",
+      ".git",
+      "node_modules"
+    ],
+    "watch": [
+      "src"
+    ],
+    "exec": "NODE_ENV=development ts-node src/app.ts",
+    "ext": "ts"
   }
 }
