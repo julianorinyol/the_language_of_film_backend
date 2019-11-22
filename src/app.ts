@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import BaseRouter from './routes';
+import BaseRouter from './controllers';
 
 const express = require('express')
 const app = express()
