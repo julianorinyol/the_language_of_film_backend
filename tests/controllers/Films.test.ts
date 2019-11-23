@@ -1,27 +1,73 @@
 const request = require('supertest');
 import app from '../../src/app'
+import DatabaseHelper from '../../src/databaseHelper'
 const { mockRequest, mockResponse } = require('../util/interceptor')
-// const { get } = require('../../src/controllers/Films')
 import { FilmController } from '../../src/controllers/Films'
 const apiVersionPrefix: string = `/api/v1`
 const filmsBaseUrl = `${apiVersionPrefix}/films`
-const filmsResponse = { 
-    films:    {
-        fakemovie1: { name: 'fake movie 1' },
-        fakemovie2: { name: 'fake movie 2' } 
-    }
-}
+
+const filmsResponse = [
+    { name: 'bla' },
+    { name: 'blar' } 
+]
+
+let firstFilm = {}
+let existingId: string = ''
 
 import express = require('express')
 
+//Importing as an object so i can spyOn methods https://stackoverflow.com/questions/27323031/how-to-mock-dependencies-for-unit-tests-with-es6-modules/38414160#38414160
+import * as FilmModel from '../../src/models/Film';
+
+let server:any;
+let agent:any;
+
 describe('film controller', () => {
+    beforeAll(async () => {
+        DatabaseHelper.initializeDatabase();
+        const film = new FilmModel.Film({ name: 'bla'});
+        await film.save();
+        
+        const film2 = new FilmModel.Film({ name: 'blar'});
+        await film2.save();
+        const film1 = await FilmModel.Film.find().then(res => res[0])
+        // @ts-ignore
+        existingId = film1._id
+        firstFilm = film1
+    });
+
+    afterAll((done) => {
+        return DatabaseHelper.dropDatabase(done);
+    });
+
+    beforeEach((done) => {
+        server = app.listen(4000, (err: Error) => {
+          if (err) return done(err);
+    
+           agent = request.agent(server); // since the application is already listening, it should use the allocated port
+           done();
+        });
+    });
+    
+    afterEach((done) => {
+      return  server && server.close(done);
+    });
+    
     describe('find()', () => {
         // test code implementation
-        it('should call status() with 200 and json() with the correct response object - controller function called directly', async () => {
+        it('should call status() with 200 and json() with the correct response object - controller function called directly', async (done) => {
             expect.assertions(3)
             const req = mockRequest();
             const res = mockResponse();
-
+            
+            jest.spyOn(FilmModel.Film, 'find')
+                // @ts-ignore
+                .mockImplementationOnce(() => {
+                    return Promise.resolve().then(() => {
+                        return filmsResponse
+                    })
+                })
+            
             await FilmController.find(req, res);
 
             expect(res.json.mock.calls.length).toBe(1);
@@ -29,47 +75,64 @@ describe('film controller', () => {
             //and seed it with test data
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith(filmsResponse);
+            done()
         })
 
         it('should return status code 200 - when called via endpoint', () => {
-            return request(app).get(filmsBaseUrl).then((response: any) => {
+            return agent.get(filmsBaseUrl).then((response: any) => {
                 return expect(response.statusCode).toBe(200)
             })
         });
 
         it('should return an object with film objects as values - when called via endpoint ', () => {
-            return request(app).get(filmsBaseUrl).then( async (response: any) => {
+            expect.assertions(3)
+            const expected = [{name: 'bla'}, {name: 'blar'}]
+
+            return agent.get(filmsBaseUrl).then( async (response: any) => {
                 //TODO when database is set up, create test db in "beforeAll"... 
                 //and seed it with test data
-                const films: {name: string}[] = response.body.films
-                for(const filmId in films) {
-                    const film = films[filmId]
+                const films: {name: string}[] = response.body
+                films.forEach(film => {
                     expect(film.name).toEqual(expect.any(String))
-                }
-                expect(response.body).toMatchObject(filmsResponse)
+                })
+
+                return expect(JSON.stringify(response.body)).toEqual(JSON.stringify(expected))
             })
         });
+
+        it('should return film objects without the __v field - when called via endpoint ', (done) => {
+            return agent.get(filmsBaseUrl).then( async (response: any) => {
+                //TODO when database is set up, create test db in "beforeAll"... 
+                //and seed it with test data
+                const films: any[] = response.body
+                
+                films.forEach(film => {
+                    expect(film['__v']).toBeUndefined();
+                })
+                done()
+            })
+        });
+        
     })
 
     describe('get()', () => {
-        it('should call status() with 200 and json() with the correct response object when called with existing id - controller function called directly', async () => {
+        it('should call status() with 200 and json() with the correct response object when called with existing id - controller function called directly', async (done) => {
             expect.assertions(3)
             let req = mockRequest();
-            req.params = { filmId: 'fakemovie1' }
+            req.params = { filmId: existingId }
             const res = mockResponse();
 
             await FilmController.get(req, res);
 
-            
-            expect(res.send.mock.calls.length).toBe(1);
+            expect(res.json.mock.calls.length).toBe(1);
             expect(res.status).toHaveBeenCalledWith(200);
             //TODO when database is set up, create test db in "beforeAll"... 
             //and seed it with test data
-            const expectedResponseBody = {"name": "fake movie 1"}
-            expect(res.send).toHaveBeenCalledWith(expectedResponseBody);
+            expect(res.json).toHaveBeenCalledWith(filmsResponse[0]);
+            done()
         })
 
-        it('should call res.status() with 404 when given an id that doesnt exist - controller function called directly', async () => {        
+        it('should call res.status() with 404 when given an id that doesnt exist - controller function called directly', async (done) => {        
             expect.assertions(2)
             let req = mockRequest();
             req.params = { filmId: 'i_dont_exist' }
@@ -84,16 +147,17 @@ describe('film controller', () => {
             }
 
             expect(res.json).toHaveBeenCalledWith(expectedResponseBody);
+            done()
         })
 
         it('should return status code 200 - when called via endpoint with an existing id', () => {
-            const existingId = Object.keys(filmsResponse.films)[0]
-            return request(app).get(`${filmsBaseUrl}/${existingId}`).then((response: any) => {
+            return agent.get(`${filmsBaseUrl}/${existingId}`).then((response: any) => {
                 return expect(response.statusCode).toBe(200)
             })
         });
+
         it('should return status code 404 - when called via endpoint with a NON-existant id', () => {
-            return request(app).get(`${filmsBaseUrl}/fake_id_here`).then((response: any) => {
+            return agent.get(`${filmsBaseUrl}/fake_id_here`).then((response: any) => {
                 return expect(response.statusCode).toBe(404)
             })
         });
@@ -102,8 +166,7 @@ describe('film controller', () => {
     // These regular REST routes, should not exist... yet at least.
     describe('create() - should not exist', () => {
         it('should return status code 404 - as its not defined', () => {
-            const existingId = Object.keys(filmsResponse.films)[0]
-            return request(app).post(filmsBaseUrl, { name: 'new name' }).then((response: any) => {
+            return agent.post(filmsBaseUrl, { name: 'new name' }).then((response: any) => {
                 return expect(response.statusCode).toBe(404)
             })
         });
@@ -111,8 +174,7 @@ describe('film controller', () => {
 
     describe('update() - should not exist', () => {
         it('should return status code 404 - as its not defined', () => {
-            const existingId = Object.keys(filmsResponse.films)[0]
-            return request(app).put(`${filmsBaseUrl}/${existingId}`, { name: 'new name' }).then((response: any) => {
+            return agent.put(`${filmsBaseUrl}/${existingId}`, { name: 'new name' }).then((response: any) => {
                 return expect(response.statusCode).toBe(404)
             })
         });
@@ -120,8 +182,7 @@ describe('film controller', () => {
 
     describe('patch() - should not exist', () => {
         it('should return status code 404 - as its not defined', () => {
-            const existingId = Object.keys(filmsResponse.films)[0]
-            return request(app).patch(`${filmsBaseUrl}/${existingId}`, { name: 'new name' }).then((response: any) => {
+            return agent.patch(`${filmsBaseUrl}/${existingId}`, { name: 'new name' }).then((response: any) => {
                 return expect(response.statusCode).toBe(404)
             })
         });
@@ -129,8 +190,7 @@ describe('film controller', () => {
     
     describe('delete() - should not exist', () => {
         it('should return status code 404 - as its not defined', () => {
-            const existingId = Object.keys(filmsResponse.films)[0]
-            return request(app).del(`${filmsBaseUrl}/${existingId}`).then((response: any) => {
+            return agent.del(`${filmsBaseUrl}/${existingId}`).then((response: any) => {
                 return expect(response.statusCode).toBe(404)
             })
         });

@@ -1,31 +1,25 @@
 
 import { Request, Response, Router } from 'express';
 import { INTERNAL_SERVER_ERROR, NOT_FOUND, OK } from 'http-status-codes';
+import { Film, FilmDocument} from "../models/Film";
 
 const router = Router();
 
-type FilmType = {
-    name: string
-}
-
-type FilmMapType = {
-    [key: string]: FilmType
-}
-
-const films: FilmMapType = {
-    fakemovie1: {
-        name: "fake movie 1"
-    },
-    fakemovie2: {
-        name: "fake movie 2"
-    }
+const filterOutFields = (film: any) => {
+    return { name: film.name }
 }
 
 export const FilmController = {
     // Find All Films - "GET /api/v1/films/"
-    find: (req: Request, res: Response) => {
+    find: async (req: Request, res: Response) => {
         try {
-            return res.status(OK).json({films});
+            const theFilms = await Film.find()
+                //TODO use mongoose built in .select({ "name": 1, "_id": 0})
+                .then((res: FilmDocument[]) => {
+                    return res.map(film => filterOutFields(film))
+            })
+
+            return res.status(OK).json(theFilms);
         } catch (err) {
             return res.status(INTERNAL_SERVER_ERROR).json({
                 error: err.message,
@@ -37,13 +31,16 @@ export const FilmController = {
     get: (req: Request, res: Response) => {
         try {
             const { filmId } = req.params
-            if(!(filmId in films)) {
-                return res.status(NOT_FOUND).json({
-                    error: `There is no film with id ${filmId}`,
-                });
-            }
+            return Film.findById(filmId).then(film => {
+                if(film) {
+                    return res.status(OK).json(filterOutFields(film))
+                } else {
+                    return res.status(NOT_FOUND).json({
+                        error: `There is no film with id ${filmId}`,
+                    });
+                }
+            })
 
-            return res.status(OK).send(films[filmId])
         } catch (err) {
             return res.status(INTERNAL_SERVER_ERROR).json({
                 error: err.message,
