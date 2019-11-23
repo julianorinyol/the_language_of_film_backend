@@ -1,4 +1,3 @@
-import { Router, Request, Response } from 'express';
 import BaseRouter from './controllers';
 
 const express = require('express')
