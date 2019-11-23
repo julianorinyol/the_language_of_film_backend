@@ -1,0 +1,21 @@
+version: "3.7"
+services:
+  main-api:
+    container_name: main-api
+    restart: always
+    build: ./
+    environment:
+      DATABASE_HOST: mongo
+      DATABASE_NAME: my_database
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/usr/src/app
+    links:
+      - mongo
+    command: yarn dev
+  mongo:
+    container_name: mongo
+    image: mongo
+    ports:
+      - "27017:27017"
