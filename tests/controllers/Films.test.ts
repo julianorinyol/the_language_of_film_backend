@@ -7,11 +7,10 @@ const apiVersionPrefix: string = `/api/v1`
 const filmsBaseUrl = `${apiVersionPrefix}/films`
 
 const filmsResponse = [
-    { name: 'bla' },
-    { name: 'blar' } 
+    { name: 'bla', img: 'defaultimage'},
+    { name: 'blar', img: 'defaultimage' } 
 ]
 
-let firstFilm = {}
 let existingId: string = ''
 
 import express = require('express')
@@ -25,15 +24,13 @@ let agent:any;
 describe('film controller', () => {
     beforeAll(async () => {
         DatabaseHelper.initializeDatabase();
-        const film = new FilmModel.Film({ name: 'bla'});
-        await film.save();
+        await Promise.all(filmsResponse.map(async rawFilm => {
+            return await new FilmModel.Film(rawFilm).save();
+        }))
         
-        const film2 = new FilmModel.Film({ name: 'blar'});
-        await film2.save();
         const film1 = await FilmModel.Film.find().then(res => res[0])
         // @ts-ignore
         existingId = film1._id
-        firstFilm = film1
     });
 
     afterAll((done) => {
@@ -86,8 +83,6 @@ describe('film controller', () => {
 
         it('should return an object with film objects as values - when called via endpoint ', () => {
             expect.assertions(3)
-            const expected = [{name: 'bla'}, {name: 'blar'}]
-
             return agent.get(filmsBaseUrl).then( async (response: any) => {
                 //TODO when database is set up, create test db in "beforeAll"... 
                 //and seed it with test data
@@ -96,7 +91,7 @@ describe('film controller', () => {
                     expect(film.name).toEqual(expect.any(String))
                 })
 
-                return expect(JSON.stringify(response.body)).toEqual(JSON.stringify(expected))
+                return expect(JSON.stringify(response.body)).toEqual(JSON.stringify(filmsResponse))
             })
         });
 

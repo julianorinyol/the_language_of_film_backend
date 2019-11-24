@@ -6,7 +6,7 @@ import { Film, FilmDocument} from "../models/Film";
 const router = Router();
 
 const filterOutFields = (film: any) => {
-    return { name: film.name }
+    return { name: film.name, img: film.img }
 }
 
 export const FilmController = {
