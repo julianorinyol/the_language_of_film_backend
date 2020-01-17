@@ -20,6 +20,9 @@ const DatabaseHelper = {
     dropDatabase() {
         console.log(`Dropping the database.`)
         return mongoose.connection.db.dropDatabase();
+    },
+    closeConnection() {
+        return mongoose.connection.close()
     }
 }
 
