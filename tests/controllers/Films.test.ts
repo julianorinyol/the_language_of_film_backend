@@ -23,7 +23,7 @@ let agent:any;
 
 describe('film controller', () => {
     beforeAll(async () => {
-        DatabaseHelper.initializeDatabase();
+        await DatabaseHelper.initializeDatabase();
         await Promise.all(filmsResponse.map(async rawFilm => {
             return await new FilmModel.Film(rawFilm).save();
         }))
@@ -34,7 +34,7 @@ describe('film controller', () => {
     });
 
     afterAll((done) => {
-        return DatabaseHelper.dropDatabase(done);
+        return DatabaseHelper.dropDatabase().then(()=> done());
     });
 
     beforeEach((done) => {

@@ -7,19 +7,19 @@ const DatabaseHelper = {
             connectionString = `${mongoConnectionPrefix}${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}`
         }
         console.log(`Connecting to database: ${connectionString}`)
-        mongoose.connect(connectionString, {
+        return mongoose.connect(connectionString, {
             useNewUrlParser: true,
             useUnifiedTopology: true
-        }).then(  () => { 
+        }).then(  (x) => { 
             console.log(`Database connection complete.`)
+            return x
         }).catch(err => {
             console.error(`Database connection error ${err.message}`)
         })
     },
-    dropDatabase(cb:Function) {
+    dropDatabase() {
         console.log(`Dropping the database.`)
-        mongoose.connection.db.dropDatabase();
-        if(cb) cb()
+        return mongoose.connection.db.dropDatabase();
     }
 }
 
