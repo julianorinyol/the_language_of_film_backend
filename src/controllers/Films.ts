@@ -13,13 +13,13 @@ export const FilmController = {
     // Find All Films - "GET /api/v1/films/"
     find: async (req: Request, res: Response) => {
         try {
-            const theFilms = await Film.find()
+            const films = await Film.find()
                 //TODO use mongoose built in .select({ "name": 1, "_id": 0})
                 .then((res: FilmDocument[]) => {
-                    return res.map(film => filterOutFields(film))
-            })
-
-            return res.status(OK).json(theFilms);
+                        return res.map(film => filterOutFields(film))
+                })
+                
+            return res.status(OK).json(films);
         } catch (err) {
             return res.status(INTERNAL_SERVER_ERROR).json({
                 error: err.message,
