@@ -22,7 +22,7 @@ let server:any;
 let agent:any;
 
 describe('film controller', () => {
-    beforeAll(async () => {
+    beforeAll(async (done) => {
         await DatabaseHelper.initializeDatabase();
 
         for(const rawFilm of filmsResponse) {
@@ -32,10 +32,11 @@ describe('film controller', () => {
         const film1 = await FilmModel.Film.find().then(res => res[0])
         // @ts-ignore
         existingId = film1._id
+        return done()
     });
 
     afterAll((done) => {
-        return DatabaseHelper.dropDatabase().then(()=> done());
+        return DatabaseHelper.dropDatabase().then(DatabaseHelper.closeConnection)
     });
 
     beforeEach((done) => {
@@ -48,7 +49,8 @@ describe('film controller', () => {
     });
     
     afterEach((done) => {
-      return  server && server.close(done);
+      server && server.close();
+      return done()
     });
     
     describe('find()', () => {
@@ -73,7 +75,7 @@ describe('film controller', () => {
             //and seed it with test data
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith(filmsResponse);
-            done()
+            return done()
         })
 
         it('should return status code 200 - when called via endpoint', () => {
@@ -106,7 +108,7 @@ describe('film controller', () => {
                 films.forEach(film => {
                     expect(film['__v']).toBeUndefined();
                 })
-                done()
+                return done()
             })
         });
         
@@ -126,7 +128,7 @@ describe('film controller', () => {
             //TODO when database is set up, create test db in "beforeAll"... 
             //and seed it with test data
             expect(res.json).toHaveBeenCalledWith(filmsResponse[0]);
-            done()
+            return done()
         })
 
         it('should call res.status() with 404 when given an id that doesnt exist - controller function called directly', async (done) => {        
@@ -144,7 +146,7 @@ describe('film controller', () => {
             }
 
             expect(res.json).toHaveBeenCalledWith(expectedResponseBody);
-            done()
+            return done()
         })
 
         it('should return status code 200 - when called via endpoint with an existing id', () => {
