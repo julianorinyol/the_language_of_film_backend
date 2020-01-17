@@ -24,10 +24,11 @@ let agent:any;
 describe('film controller', () => {
     beforeAll(async () => {
         await DatabaseHelper.initializeDatabase();
-        await Promise.all(filmsResponse.map(async rawFilm => {
-            return await new FilmModel.Film(rawFilm).save();
-        }))
-        
+
+        for(const rawFilm of filmsResponse) {
+            await new FilmModel.Film(rawFilm).save();;
+        }
+
         const film1 = await FilmModel.Film.find().then(res => res[0])
         // @ts-ignore
         existingId = film1._id
@@ -90,6 +91,7 @@ describe('film controller', () => {
                 films.forEach(film => {
                     expect(film.name).toEqual(expect.any(String))
                 })
+                const responseBody = JSON.stringify(response.body)
 
                 return expect(JSON.stringify(response.body)).toEqual(JSON.stringify(filmsResponse))
             })
