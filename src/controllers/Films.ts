@@ -1,11 +1,12 @@
 
 import { Request, Response, Router } from 'express';
 import { INTERNAL_SERVER_ERROR, NOT_FOUND, OK } from 'http-status-codes';
-import { Film, FilmDocument} from "../models/Film";
+import { Film, FilmDocument, FilmData} from "../models/Film";
 
 const router = Router();
 
-const filterOutFields = (film: any) => {
+
+const filterOutFields = (film: FilmDocument): FilmData => {
     return { name: film.name, img: film.img }
 }
 
@@ -13,9 +14,9 @@ export const FilmController = {
     // Find All Films - "GET /api/v1/films/"
     find: async (req: Request, res: Response) => {
         try {
-            const films = await Film.find()
+            const films: FilmData[] = await Film.find()
                 //TODO use mongoose built in .select({ "name": 1, "_id": 0})
-                .then((res: FilmDocument[]) => {
+                .then((res: FilmDocument[]): FilmData[] => {
                         return res.map(film => filterOutFields(film))
                 })
                 
@@ -40,7 +41,6 @@ export const FilmController = {
                     });
                 }
             })
-
         } catch (err) {
             return res.status(INTERNAL_SERVER_ERROR).json({
                 error: err.message,
