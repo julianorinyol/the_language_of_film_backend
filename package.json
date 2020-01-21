@@ -13,6 +13,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "seed": "ts-node scripts/seed.ts",
+    "db": "ts-node scripts/databaseCli.ts list",
     "build": "rm -rf ./dist/ && tsc",
     "dev": "PORT=8000 nodemon",
     "test": "DATABASE_HOST=localhost DATABASE_NAME=language-of-film-testdb PORT=1234 jest",
