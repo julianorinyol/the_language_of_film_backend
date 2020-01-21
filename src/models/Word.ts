@@ -1,10 +1,15 @@
-const fs = require('fs');
-const testDataPage = 'testdata/wordsy.json'
+import mongoose from "mongoose";
 
-export const Word = {
-    find() {        
-        const rawdata = fs.readFileSync(`${testDataPage}`, "utf8");
-        const words = JSON.parse(rawdata)
-        return words
-    }
+export type WordData = {
+    word: string;
+    language: string;
 }
+
+export type WordDocument = mongoose.Document & WordData;
+
+const wordSchema = new mongoose.Schema({
+    word: { type: String },
+    language: { type: String },
+}, { timestamps: true });
+
+export const Word = mongoose.model<WordDocument>("Word", wordSchema);
