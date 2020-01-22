@@ -21,6 +21,24 @@ const DatabaseHelper = {
         console.log(`Dropping the database.`)
         return mongoose.connection.db.dropDatabase();
     },
+    listCollections():void {
+        console.log(`Existing Collections--`)
+        mongoose.connection.db.listCollections().toArray()
+        .then(collections => {
+            collections.forEach((collection)=> {
+                console.log(`\n${collection.name}`)
+            })
+        })
+    },
+    async dropCollections(collectionsToDrop:string []) {
+        const existingCollections = (await mongoose.connection.db.listCollections().toArray()).map(collection => collection.name);
+        console.log(`Existing Collections--`, existingCollections)
+        for (let i = 0; i < collectionsToDrop.length; i++) {
+            if (existingCollections.indexOf(collectionsToDrop[i]) !== -1) {
+                await mongoose.connection.db.dropCollection(collectionsToDrop[i]);
+            }
+        }
+    },
     closeConnection() {
         return mongoose.connection.close()
     }
