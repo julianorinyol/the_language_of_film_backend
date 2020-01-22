@@ -1,7 +1,7 @@
 
 import { Request, Response, Router } from 'express';
 import { OK, INTERNAL_SERVER_ERROR } from 'http-status-codes';
-import { Word, WordData } from "../models/Word";
+import { Word, WordDocument } from "../models/Word";
 
 const router = Router();
 
@@ -15,24 +15,35 @@ export const CardController = {
     // Find All Cards - "GET /api/v1/cards/"
     find: async (req: Request, res: Response) => {
         try {
-            const words: WordData[] = await Word.find().populate('translations')
-            const createAnswer = (word: WordData) => {
+            const words: WordDocument[] = await Word.find().populate('translations').populate('phrases')
+            const createAnswer = (word: WordDocument) => {
                 let answer = ''
-                if(word && word.translations) {
-                    const answers = word.translations.map(translationWord => {
+                if(word && word.translations) { 
+                    const answers = word.translations.map((translationWord: any)  => {
                         return `${translationWord.word} -  ${translationWord.language}\n`
                     })
+
                     answer = answers.join('')
                 }
                 
                 return answer
             }
 
-            const reducer = (accumulator: {[key:string]: object}, word:WordData) => {
+            const createExamples = (word: WordDocument) => {
+                let examples: any[] = []
+                if(word && word.phrases) { 
+                    examples = word.phrases.map((phrase: any)  => {
+                        return `${phrase.phrase}`
+                    })
+                }
+                return examples
+            }
+
+            const reducer = (accumulator: {[key:string]: object}, word:WordDocument) => {
                 const card: CardData = {
                     question: word.word,
                     answer: createAnswer(word),
-                    examples: []
+                    examples: createExamples(word)
                 }
                 
                 accumulator[card.question] = card
