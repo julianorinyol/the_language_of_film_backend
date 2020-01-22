@@ -15,10 +15,6 @@ words
 - word
 - language_id
 
-words_words (if they are translations of each other)
-- word_1
-- word_2
-
 languages: 
 - language:
 
