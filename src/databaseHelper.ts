@@ -32,7 +32,6 @@ const DatabaseHelper = {
     },
     async dropCollections(collectionsToDrop:string []) {
         const existingCollections = (await mongoose.connection.db.listCollections().toArray()).map(collection => collection.name);
-        console.log(`Existing Collections--`, existingCollections)
         for (let i = 0; i < collectionsToDrop.length; i++) {
             if (existingCollections.indexOf(collectionsToDrop[i]) !== -1) {
                 await mongoose.connection.db.dropCollection(collectionsToDrop[i]);

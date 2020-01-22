@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
 
 export type WordData = {
-    _id?: any;
+    _id?: mongoose.Types.ObjectId;
     word: string;
     language: string;
-    translations?: any[];
+    translations?: mongoose.Types.ObjectId[];
+    phrases?: mongoose.Types.ObjectId[];
 }
 
 export type WordDocument = mongoose.Document & WordData;
