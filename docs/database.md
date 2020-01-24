@@ -1,17 +1,18 @@
-Exploring the database locally. 
+## Exploring the database locally. 
 
-In Terminal
-# find the mongo container's id
+### Find the mongo container's id
 ```$> docker container ls
 $> docker exec -it 50d28ab991e0 bash
 >mongo
 >use my_database
 >show collections
->db.films.find()```
+>db.films.find()
+```
 
-# Database Schema
 
-words
+## Database Schema
+
+```words
 - word
 - language_id
 
@@ -47,3 +48,4 @@ languages_users
 films_users
 - user_id
 - film_id
+```
