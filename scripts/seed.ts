@@ -1,11 +1,10 @@
 
-import express = require('express')
 import mongoose from 'mongoose'
 
 
 import { Film, FilmData} from "../src/models/Film";
 import { Word, WordData } from '../src/models/Word';
-import { Translation, TranslationData } from '../src/models/Translation';
+import { Phrase, PhraseData } from '../src/models/Phrase';
 import DatabaseHelper from '../src/databaseHelper'
 const defaultFilmImage = 'https://images.all-free-download.com/images/graphiclarge/movie_poster_background_art_vector_530172.jpg'
 
@@ -20,23 +19,46 @@ const filmsData: FilmData [] = [
 	} 
 ]
 
-
-
 const LANGUAGE_ENGLISH: 'english' = 'english'
 const LANGUAGE_GERMAN: 'german' = 'german'
 const LANGUAGE_SPANISH: 'spanish' = 'spanish'
 
+const word1Id: mongoose.Types.ObjectId = new mongoose.Types.ObjectId()
+const word2Id: mongoose.Types.ObjectId = new mongoose.Types.ObjectId()
+const word3Id: mongoose.Types.ObjectId = new mongoose.Types.ObjectId()
 
-const word1Id = new mongoose.Types.ObjectId()
-const word2Id = new mongoose.Types.ObjectId()
-const word3Id = new mongoose.Types.ObjectId()
+const phrase1Id: mongoose.Types.ObjectId = new mongoose.Types.ObjectId()
+const phrase2Id: mongoose.Types.ObjectId = new mongoose.Types.ObjectId()
+const phrase3Id: mongoose.Types.ObjectId = new mongoose.Types.ObjectId()
+
+const phrasesData: PhraseData[] = [
+	{
+		_id: phrase1Id,
+		phrase: "Wem gehört der verdammte Scheißhund",
+		language: LANGUAGE_GERMAN,
+		translations: [ phrase3Id ],
+		words: [ word1Id ]
+	},
+	{
+		_id: phrase2Id,
+		phrase: "Ich liebe dich Verdammte Scheiße",
+		language: LANGUAGE_GERMAN
+	},
+	{
+		_id: phrase3Id,
+		phrase: "Who does this fucking dog belong to?",
+		language: LANGUAGE_ENGLISH,
+		translations: [ phrase1Id ]
+	},
+]
 
 const wordsData: WordData[] = [
 	{ 
 		_id: word1Id,
 		word: 'verdammte', 
 		language: LANGUAGE_GERMAN,
-		translations: [ word2Id, word3Id ]
+		translations: [ word2Id, word3Id ],
+		phrases: [ phrase1Id, phrase2Id ],
 	},
 	{ 
 		_id: word2Id,
@@ -51,7 +73,9 @@ const wordsData: WordData[] = [
 		translations: [ word1Id, word2Id ]
 	}
 ]
+
 const createItems = (Model: any, data:any, name: string) => {
+	console.log(`Seeding items for model: ${name}`)
 	return Promise.all(data.map(async (rawItem:any) => {
 	    return new Model(rawItem).save()
 	    	.catch( (err:any)=> {
@@ -64,13 +88,20 @@ const createItems = (Model: any, data:any, name: string) => {
 	})
 }
 
+console.log(`Opening database connection`)
 DatabaseHelper.initializeDatabase()
 .then(() => {
-	return DatabaseHelper.dropCollections(['films', 'words'])
+	const collectionsToDrop = ['films', 'words', 'phrases']
+	console.log(`Dropping collections: ${collectionsToDrop.join(', ')}`)
+	return DatabaseHelper.dropCollections(collectionsToDrop)
 })
 .then(() => createItems(Film, filmsData, `film`))
+.then(() => createItems(Phrase, phrasesData, `phrase`))
 .then(() => createItems(Word, wordsData, `word`))
-.then(() => DatabaseHelper.closeConnection())
+.then(() => {
+	console.log(`Finished Seeding, closing database connection`)
+	return DatabaseHelper.closeConnection()
+})
 .catch((err) => {
 	console.error(`Error seeding: `, err)
 })
