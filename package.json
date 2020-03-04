@@ -5,10 +5,15 @@
   "license": "MIT",
   "dependencies": {
     "@types/cors": "^2.8.6",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "http-status-codes": "^1.4.0",
-    "mongoose": "^5.7.12"
+    "mongoose": "^5.7.12",
+    "passport": "^0.4.1",
+    "passport-facebook": "^3.0.0",
+    "passport-jwt": "^4.0.0",
+    "passport-local": "^1.0.0"
   },
   "scripts": {
     "start": "node dist/server.js",
@@ -20,10 +25,15 @@
     "test:watch": "PORT=1234 jest --watch"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
     "@types/express": "^4.17.2",
     "@types/jest": "^24.0.23",
     "@types/mongoose": "^5.5.32",
     "@types/node": "^12.12.11",
+    "@types/passport": "^1.0.2",
+    "@types/passport-facebook": "^2.1.9",
+    "@types/passport-jwt": "^3.0.3",
+    "@types/passport-local": "^1.0.33",
     "jest": "^24.9.0",
     "nodemon": "^1.19.4",
     "supertest": "^4.0.2",
