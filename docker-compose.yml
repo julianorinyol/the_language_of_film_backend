@@ -6,7 +6,7 @@ services:
     build: ./
     environment:
       DATABASE_HOST: mongo
-      DATABASE_NAME: my_database
+      DATABASE_NAME: language_of_film_db
     ports:
       - "8000:8000"
     volumes:

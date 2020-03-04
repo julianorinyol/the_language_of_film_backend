@@ -4,7 +4,7 @@
 ```$> docker container ls
 $> docker exec -it 50d28ab991e0 bash
 >mongo
->use my_database
+>use language_of_film_db
 >show collections
 >db.films.find()
 ```
