@@ -24,7 +24,7 @@
     "build": "rm -rf ./dist/ && tsc",
     "dev": "PORT=8000 nodemon",
     "test": "JWT_SECRET=asdf DATABASE_HOST=localhost DATABASE_NAME=language-of-film-testdb jest --watch --runInBand",
-    "test:once": "JWT_SECRET=asdf DATABASE_HOST=localhost DATABASE_NAME=language-of-film-testdb jest --runInBand"
+    "test-ci": "JWT_SECRET=asdf DATABASE_HOST=localhost DATABASE_NAME=language-of-film-testdb jest --runInBand"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
