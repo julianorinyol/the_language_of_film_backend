@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 
 import { Film, FilmData} from "../src/models/Film";
 import { Word, WordData } from '../src/models/Word';
+import { User, UserData } from '../src/models/User';
 import { Phrase, PhraseData } from '../src/models/Phrase';
 import DatabaseHelper from '../src/databaseHelper'
 const defaultFilmImage = 'https://images.all-free-download.com/images/graphiclarge/movie_poster_background_art_vector_530172.jpg'
@@ -74,6 +75,14 @@ const wordsData: WordData[] = [
 	}
 ]
 
+
+const usersData: UserData[] = [
+	{ 
+		email: 'julian@bla.com', 
+		password: `password123`
+	}
+]
+
 const createItems = (Model: any, data:any, name: string) => {
 	console.log(`Seeding items for model: ${name}`)
 	return Promise.all(data.map(async (rawItem:any) => {
@@ -91,13 +100,14 @@ const createItems = (Model: any, data:any, name: string) => {
 console.log(`Opening database connection`)
 DatabaseHelper.initializeDatabase()
 .then(() => {
-	const collectionsToDrop = ['films', 'words', 'phrases']
+	const collectionsToDrop = ['films', 'words', 'phrases', 'users']
 	console.log(`Dropping collections: ${collectionsToDrop.join(', ')}`)
 	return DatabaseHelper.dropCollections(collectionsToDrop)
 })
 .then(() => createItems(Film, filmsData, `film`))
 .then(() => createItems(Phrase, phrasesData, `phrase`))
 .then(() => createItems(Word, wordsData, `word`))
+.then(() => createItems(User, usersData, `user`))
 .then(() => {
 	console.log(`Finished Seeding, closing database connection`)
 	return DatabaseHelper.closeConnection()
