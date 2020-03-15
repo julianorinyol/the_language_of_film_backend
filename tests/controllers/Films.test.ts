@@ -1,14 +1,31 @@
 const request = require('supertest');
-import app from '../../src/app'
+import app, {API_VERSION_STRING} from '../../src/app'
 import DatabaseHelper from '../../src/databaseHelper'
 const { mockRequest, mockResponse } = require('../util/interceptor')
 import { FilmController } from '../../src/controllers/Films'
-const apiVersionPrefix: string = `/api/v1`
-const filmsBaseUrl = `${apiVersionPrefix}/films`
+
+const filmsBaseUrl = `${API_VERSION_STRING}/films`
+const loginUrl = `${API_VERSION_STRING}/login`
+
+
+const login = (user:UserData) => agent.post(loginUrl)
+        .send(user)
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .then((response: any) => response.body.token)
 
 const filmsResponse = [
     { name: 'bla', img: 'defaultimage'},
     { name: 'blar', img: 'defaultimage' } 
+]
+
+import { User, UserData } from '../../src/models/User'
+
+const usersData: UserData[] = [
+    { 
+        email: 'julian@bla.com', 
+        password: `password123`
+    }
 ]
 
 let existingId: string = ''
@@ -18,8 +35,11 @@ import express = require('express')
 //Importing as an object so i can spyOn methods https://stackoverflow.com/questions/27323031/how-to-mock-dependencies-for-unit-tests-with-es6-modules/38414160#38414160
 import * as FilmModel from '../../src/models/Film';
 
+
 let server:any;
 let agent:any;
+let userJWTToken:any;
+let token:any;
 
 describe('film controller', () => {
     beforeAll(async (done) => {
@@ -32,6 +52,16 @@ describe('film controller', () => {
         const film1 = await FilmModel.Film.find().then(res => res[0])
         // @ts-ignore
         existingId = film1._id
+
+
+
+        for(const userData of usersData) {
+            await new User(userData).save()
+        }
+
+
+        const user1 = await User.find().then((res:any) => res[0])
+
         return done()
     });
 
@@ -40,10 +70,11 @@ describe('film controller', () => {
     });
 
     beforeEach((done) => {
-        server = app.listen(4000, (err: Error) => {
+        server = app.listen(4000, async (err: Error) => {
           if (err) return done(err);
     
            agent = request.agent(server); // since the application is already listening, it should use the allocated port
+           token = await login(usersData[0])
            done();
         });
     });
@@ -54,6 +85,14 @@ describe('film controller', () => {
     });
     
     describe('find()', () => {
+        it(`should respond with a 401 ERROR  when Authorization Header is not included`, () => {
+            expect.assertions(1)
+            return agent.get(filmsBaseUrl)
+            .then((response: any) => {
+                return expect(response.statusCode).toBe(401)
+            })
+        })
+
         // test code implementation
         it('should call status() with 200 and json() with the correct response object - controller function called directly', async (done) => {
             expect.assertions(3)
@@ -79,42 +118,54 @@ describe('film controller', () => {
         })
 
         it('should return status code 200 - when called via endpoint', () => {
-            return agent.get(filmsBaseUrl).then((response: any) => {
+            return agent.get(filmsBaseUrl)
+            .set(`Authorization`, `bearer ${token}`)
+            .then((response: any) => {
                 return expect(response.statusCode).toBe(200)
             })
         });
 
         it('should return an object with film objects as values - when called via endpoint ', () => {
             expect.assertions(3)
-            return agent.get(filmsBaseUrl).then( async (response: any) => {
-                //TODO when database is set up, create test db in "beforeAll"... 
-                //and seed it with test data
-                const films: {name: string}[] = response.body
-                films.forEach(film => {
-                    expect(film.name).toEqual(expect.any(String))
-                })
-                const responseBody = JSON.stringify(response.body)
+            return agent.get(filmsBaseUrl)
+                .set(`Authorization`, `bearer ${token}`)
+                .then( async (response: any) => {
+                    //TODO when database is set up, create test db in "beforeAll"... 
+                    //and seed it with test data
+                    const films: {name: string}[] = response.body
+                    films.forEach(film => {
+                        expect(film.name).toEqual(expect.any(String))
+                    })
+                    const responseBody = JSON.stringify(response.body)
 
-                return expect(JSON.stringify(response.body)).toEqual(JSON.stringify(filmsResponse))
-            })
+                    return expect(JSON.stringify(response.body)).toEqual(JSON.stringify(filmsResponse))
+                })
         });
 
         it('should return film objects without the __v field - when called via endpoint ', (done) => {
-            return agent.get(filmsBaseUrl).then( async (response: any) => {
-                //TODO when database is set up, create test db in "beforeAll"... 
-                //and seed it with test data
-                const films: any[] = response.body
-                
-                films.forEach(film => {
-                    expect(film['__v']).toBeUndefined();
+            return agent.get(filmsBaseUrl).set(`Authorization`, `bearer ${token}`)
+                .then( async (response: any) => {
+                    //TODO when database is set up, create test db in "beforeAll"... 
+                    //and seed it with test data
+                    const films: any[] = response.body
+                    
+                    films.forEach(film => {
+                        expect(film['__v']).toBeUndefined();
+                    })
+                    return done()
                 })
-                return done()
-            })
         });
-        
     })
 
     describe('get()', () => {
+        it(`should respond with a 401 ERROR  when Authorization Header is not included`, () => {
+            expect.assertions(1)
+            return agent.get(`${filmsBaseUrl}/${existingId}`)
+            .then((response: any) => {
+                return expect(response.statusCode).toBe(401)
+            })
+        })
+
         it('should call status() with 200 and json() with the correct response object when called with existing id - controller function called directly', async (done) => {
             expect.assertions(3)
             let req = mockRequest();
@@ -150,13 +201,13 @@ describe('film controller', () => {
         })
 
         it('should return status code 200 - when called via endpoint with an existing id', () => {
-            return agent.get(`${filmsBaseUrl}/${existingId}`).then((response: any) => {
+            return agent.get(`${filmsBaseUrl}/${existingId}`).set(`Authorization`, `bearer ${token}`).then((response: any) => {
                 return expect(response.statusCode).toBe(200)
             })
         });
 
         it('should return status code 404 - when called via endpoint with a NON-existant id', () => {
-            return agent.get(`${filmsBaseUrl}/fake_id_here`).then((response: any) => {
+            return agent.get(`${filmsBaseUrl}/fake_id_here`).set(`Authorization`, `bearer ${token}`).then((response: any) => {
                 return expect(response.statusCode).toBe(404)
             })
         });
