@@ -25,11 +25,15 @@ describe(`User`, () => {
         return done()
     })
 
-    afterAll(async (done) => {
-        return Promise.all(users.map(user => {
-            return user.remove()
-        })).then(done)
-    })
+    // afterAll(async (done) => {
+    //     return Promise.all(users.map(user => {
+    //         return user.remove()
+    //     }))
+    //     .then(done)
+    // })
+    afterAll((done) => {
+        return DatabaseHelper.dropDatabase().then(DatabaseHelper.closeConnection)
+    });
     
     it(`should hash the password on save`, () => {
         expect(users[0].email).toEqual(userData[0].email)
