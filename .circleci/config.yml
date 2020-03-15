@@ -7,7 +7,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: circleci/node:11.15
+      - image: circleci/node:13.10.1
       - image: mongo:4.2.0 
 
       # Specify service dependencies here if necessary
@@ -35,4 +35,4 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       # run tests!
-      - run: yarn test
+      - run: yarn test-ci

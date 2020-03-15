@@ -3,6 +3,7 @@ import FilmRouter from './Films';
 import WordsRouter from './Words';
 import PhrasesRouter from './Phrases';
 import CardsRouter from './Cards';
+import LoginRouter from './Login';
 
 // Init router and path
 const router = Router();
@@ -12,6 +13,7 @@ router.use('/films', FilmRouter);
 router.use('/words', WordsRouter);
 router.use('/phrases', PhrasesRouter);
 router.use('/cards', CardsRouter);
+router.use('/login', LoginRouter);
 
 // Export the base-router
 export default router;

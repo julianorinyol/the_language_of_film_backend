@@ -1,25 +1,25 @@
 import crypto from "crypto";
 import mongoose from "mongoose";
-import { comparePassword, hashPassword }  from '../helpers/authHelper'
+import { comparePassword, hashPassword }  from '../helpers/passwordHelper'
 
 export type UserData = {
     email: string;
     password: string;
-    passwordResetToken: string;
-    passwordResetExpires: Date;
+    passwordResetToken?: string;
+    passwordResetExpires?: Date;
 
-    facebook: string;
-    tokens: AuthToken[];
+    facebook?: string;
+    tokens?: AuthToken[];
 
-    profile: {
+    profile?: {
         name: string;
         gender: string;
         location: string;
         website: string;
         picture: string;
     };
-    comparePasswordToHash: comparePasswordToHashFunction;
-    gravatar: (size: number) => string;
+    // comparePasswordToHash: comparePasswordToHashFunction;
+    gravatar?: (size: number) => string;
 }
 
 export type UserDocument = mongoose.Document & UserData;
@@ -66,7 +66,7 @@ const comparePasswordToHash: comparePasswordToHashFunction = function (candidate
     return comparePassword(candidatePassword, this.password);
 };
 
-userSchema.methods.comparePasswordToHash = comparePasswordToHash;
+userSchema.methods.comparePassword = comparePasswordToHash;
 
 /**
  * Helper method for getting user's gravatar.
@@ -78,5 +78,7 @@ userSchema.methods.gravatar = function (size: number = 200) {
     const md5 = crypto.createHash("md5").update(this.email).digest("hex");
     return `https://gravatar.com/avatar/${md5}?s=${size}&d=retro`;
 };
+
+// export { userSchema }
 
 export const User = mongoose.model<UserDocument>("User", userSchema);

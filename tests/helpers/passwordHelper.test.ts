@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs'
-import { comparePassword } from '../../src/helpers/authHelper'
+import { comparePassword } from '../../src/helpers/passwordHelper'
+
 describe(`comparePassword`, () => {
     it(`should return true if password is correct`, async () => {
         const password = 'hunter9'
