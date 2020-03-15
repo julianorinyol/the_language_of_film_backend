@@ -2,9 +2,8 @@
 import { Request, Response, Router } from 'express';
 import { INTERNAL_SERVER_ERROR, NOT_FOUND, OK } from 'http-status-codes';
 import { Film, FilmDocument, FilmData} from "../models/Film";
-
+import { AuthController } from './Auth'
 const router = Router();
-
 
 const filterOutFields = (film: FilmDocument): FilmData => {
     return { name: film.name, img: film.img }
@@ -48,8 +47,9 @@ export const FilmController = {
         }
     }
 }
+const authController = new AuthController();
 
-router.get('/', FilmController.find);
-router.get('/:filmId', FilmController.get)
+router.get('/', authController.authenticateJWT, FilmController.find)
+router.get('/:filmId', authController.authenticateJWT, FilmController.get)
 
 export default router;
