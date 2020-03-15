@@ -14,11 +14,6 @@ export const LoginController = {
         return res.status(200).json({bla: "blaaaaa"})
     },
     authenticateUser(req: Request, res: Response, next: NextFunction) {
-        
-        // i think the problem is that you are returning a function.... its a middleware thing...
-        // so just call that shit with params
-        // const zzz = passport.authenticate('local', {session: false})(req, res, next)
-        // console.log(`zzz`, zzz)
         passport.authenticate("local", {session: false}, function (err, user, info) {
           if (err) {
             return next(err);
@@ -30,7 +25,7 @@ export const LoginController = {
             
             res.status(200).send({ token });
           }
-        })(req,res,next);
+        })(req,res,next); // todo: this is a weird setup.
       }
 }
 
