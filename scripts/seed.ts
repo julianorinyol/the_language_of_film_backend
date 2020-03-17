@@ -6,6 +6,8 @@ import { Film, FilmData} from "../src/models/Film";
 import { Word, WordData } from '../src/models/Word';
 import { User, UserData } from '../src/models/User';
 import { Phrase, PhraseData } from '../src/models/Phrase';
+import { Review, ReviewData } from '../src/models/Review';
+
 import DatabaseHelper from '../src/databaseHelper'
 const defaultFilmImage = 'https://images.all-free-download.com/images/graphiclarge/movie_poster_background_art_vector_530172.jpg'
 
@@ -31,6 +33,10 @@ const word3Id: mongoose.Types.ObjectId = new mongoose.Types.ObjectId()
 const phrase1Id: mongoose.Types.ObjectId = new mongoose.Types.ObjectId()
 const phrase2Id: mongoose.Types.ObjectId = new mongoose.Types.ObjectId()
 const phrase3Id: mongoose.Types.ObjectId = new mongoose.Types.ObjectId()
+
+
+
+const user1Id: mongoose.Types.ObjectId = new mongoose.Types.ObjectId()
 
 const phrasesData: PhraseData[] = [
 	{
@@ -78,8 +84,19 @@ const wordsData: WordData[] = [
 
 const usersData: UserData[] = [
 	{ 
+		_id: user1Id,
 		email: 'julian@bla.com', 
 		password: `password123`
+	}
+]
+
+const reviewsData: ReviewData[] = [
+	{ 
+		itemType: 'word',
+		itemText: 'verdammte',
+		percentage: 50,
+		itemId: word1Id,
+		user: user1Id
 	}
 ]
 
@@ -100,7 +117,7 @@ const createItems = (Model: any, data:any, name: string) => {
 console.log(`Opening database connection`)
 DatabaseHelper.initializeDatabase()
 .then(() => {
-	const collectionsToDrop = ['films', 'words', 'phrases', 'users']
+	const collectionsToDrop = ['films', 'words', 'phrases', 'users', 'reviews']
 	console.log(`Dropping collections: ${collectionsToDrop.join(', ')}`)
 	return DatabaseHelper.dropCollections(collectionsToDrop)
 })
@@ -108,6 +125,7 @@ DatabaseHelper.initializeDatabase()
 .then(() => createItems(Phrase, phrasesData, `phrase`))
 .then(() => createItems(Word, wordsData, `word`))
 .then(() => createItems(User, usersData, `user`))
+.then(() => createItems(Review, reviewsData, `review`))
 .then(() => {
 	console.log(`Finished Seeding, closing database connection`)
 	return DatabaseHelper.closeConnection()
