@@ -1,8 +1,10 @@
 import crypto from "crypto";
 import mongoose from "mongoose";
 import { comparePassword, hashPassword }  from '../helpers/passwordHelper'
+import { ReviewData } from "./Review";
 
 export type UserData = {
+    _id?: mongoose.Types.ObjectId;
     email: string;
     password: string;
     passwordResetToken?: string;
@@ -11,6 +13,8 @@ export type UserData = {
     facebook?: string;
     tokens?: AuthToken[];
 
+    reviews?: mongoose.Types.ObjectId[] | ReviewData[];
+    
     profile?: {
         name: string;
         gender: string;
@@ -18,7 +22,6 @@ export type UserData = {
         website: string;
         picture: string;
     };
-    // comparePasswordToHash: comparePasswordToHashFunction;
     gravatar?: (size: number) => string;
 }
 
@@ -41,7 +44,7 @@ const userSchema: mongoose.Schema = new mongoose.Schema({
     twitter: String,
     google: String,
     tokens: Array,
-
+    reviews: [ {type : mongoose.Schema.Types.ObjectId, ref : 'Review'} ],
     profile: {
         name: String,
         gender: String,

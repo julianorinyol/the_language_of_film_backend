@@ -6,6 +6,7 @@ import { Word, WordDocument } from "../models/Word";
 const router = Router();
 
 type CardData = {
+    id?: string;
     question: string;
     answer: string;
     examples: string[];
@@ -41,6 +42,7 @@ export const CardController = {
 
             const reducer = (accumulator: {[key:string]: object}, word:WordDocument) => {
                 const card: CardData = {
+                    id: word._id,
                     question: word.word,
                     answer: createAnswer(word),
                     examples: createExamples(word)

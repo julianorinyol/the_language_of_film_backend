@@ -10,9 +10,6 @@ import { JWT_SECRET } from "../helpers/secretsHelper";
 const secretKey:string = JWT_SECRET
 
 export const LoginController = {
-    test(req: Request, res: Response) {
-        return res.status(200).json({bla: "blaaaaa"})
-    },
     authenticateUser(req: Request, res: Response, next: NextFunction) {
         passport.authenticate("local", {session: false}, function (err, user, info) {
           if (err) {
@@ -31,11 +28,3 @@ export const LoginController = {
 
 router.post("/", LoginController.authenticateUser)
 export default router;
-
-/*
-
-curl --header "Content-Type: application/json" \
-  --request POST \
-  --data '{"email":"julian@bla.com","password":"password123"}' \
-  http://localhost:8000/api/v1/login/
-*/
