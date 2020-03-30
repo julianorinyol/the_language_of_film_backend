@@ -9,7 +9,10 @@ export type PhraseData = {
     words?: mongoose.Types.ObjectId[] | WordData[];
 }
 
-export type PhraseDocument = mongoose.Document & PhraseData;
+type PhraseMethods = {
+}
+
+export type PhraseDocument = mongoose.Document & PhraseData & PhraseMethods;
 
 const phraseSchema = new mongoose.Schema({
     phrase: { type: String },
