@@ -8,6 +8,9 @@ app.use(bodyParser.json());
 app.use(cors())
 
 
+app.get('/', cors(), function (req: any, res: any) {
+	return res.send('pong');
+});
 
 app.get('/ping', cors(), function (req: any, res: any) {
 	return res.send('pong');
