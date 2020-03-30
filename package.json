@@ -18,7 +18,7 @@
     "passport-local": "^1.0.0"
   },
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "node dist/src/server.js",
     "seed": "ts-node scripts/seed.ts",
     "db": "ts-node scripts/databaseCli.ts",
     "build": "rm -rf ./dist/ && tsc",
@@ -68,10 +68,7 @@
     "watch": [
       "src"
     ],
-    "exec": "NODE_ENV=development ts-node src/server.ts",
+    "exec": "NODE_ENV=development ts-node --files src/server.ts",
     "ext": "ts"
-  },
-  "engines": {
-    "node": "v13.10.1"
   }
 }
