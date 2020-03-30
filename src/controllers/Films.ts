@@ -45,11 +45,26 @@ export const FilmController = {
                 error: err.message,
             });
         }
-    }
+    },
+    add: (req: Request, res: Response) => {
+        try {
+            return new Film(req.body).save().then(film => {
+                return res.status(200).json(film )
+            }).catch( (err:any)=> {
+                console.log(`error saving film`, err)
+                throw err
+            })
+        } catch(err) {
+            console.log(`error creating film`, err)
+            return res.status(INTERNAL_SERVER_ERROR).json({
+                error: err.message,
+            });
+        }
+    },
 }
 const authController = new AuthController();
 
 router.get('/', authController.authenticateJWT, FilmController.find)
 router.get('/:filmId', authController.authenticateJWT, FilmController.get)
-
+router.post("/", authController.authenticateJWT, FilmController.add)
 export default router;
