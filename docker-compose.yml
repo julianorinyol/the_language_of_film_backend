@@ -5,8 +5,8 @@ services:
     restart: always
     build: ./
     environment:
-      DATABASE_HOST: mongo
-      DATABASE_NAME: language_of_film_db
+      DATABASE_HOST: mongodb://mongo
+      DATABASE_NAME: language_of_film
       JWT_SECRET: gkjh2314j3jk4
     ports:
       - "8000:8000"
@@ -20,3 +20,4 @@ services:
     image: mongo
     ports:
       - "27017:27017"
+    command: --quiet
