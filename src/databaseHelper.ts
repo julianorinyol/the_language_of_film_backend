@@ -1,11 +1,11 @@
 import mongoose, {Document, model, Model, Schema} from 'mongoose';
 
-const mongoConnectionPrefix: string = `mongodb://`
 const DatabaseHelper = {
     initializeDatabase(connectionString?: string) {
         if(!connectionString) {
-            connectionString = `${mongoConnectionPrefix}${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}`
+            connectionString = `${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}`
         }
+        
         console.log(`Connecting to database: ${connectionString}`)
         return mongoose.connect(connectionString, {
             useNewUrlParser: true,
