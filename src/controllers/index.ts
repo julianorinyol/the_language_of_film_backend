@@ -4,6 +4,7 @@ import WordsRouter from './Words';
 import PhrasesRouter from './Phrases';
 import ReviewsRouter from './Reviews';
 import CardsRouter from './Cards';
+import CurrentUserRouter from './CurrentUser';
 import LoginRouter from './Login';
 
 // Init router and path
@@ -16,6 +17,7 @@ router.use('/phrases', PhrasesRouter);
 router.use('/cards', CardsRouter);
 router.use('/reviews', ReviewsRouter);
 router.use('/login', LoginRouter);
+router.use('/me', CurrentUserRouter);
 
 // Export the base-router
 export default router;

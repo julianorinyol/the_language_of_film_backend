@@ -2,6 +2,7 @@ import crypto from "crypto";
 import mongoose from "mongoose";
 import { comparePassword, hashPassword }  from '../helpers/passwordHelper'
 import { ReviewData } from "./Review";
+import { FilmData } from "./Film";
 
 export type UserData = {
     _id?: mongoose.Types.ObjectId;
@@ -12,7 +13,7 @@ export type UserData = {
 
     facebook?: string;
     tokens?: AuthToken[];
-
+    films?: mongoose.Types.ObjectId[] | FilmData[];
     reviews?: mongoose.Types.ObjectId[] | ReviewData[];
     
     profile?: {
@@ -44,6 +45,7 @@ const userSchema: mongoose.Schema = new mongoose.Schema({
     twitter: String,
     google: String,
     tokens: Array,
+    films: [ {type : mongoose.Schema.Types.ObjectId, ref : 'Film'} ],
     reviews: [ {type : mongoose.Schema.Types.ObjectId, ref : 'Review'} ],
     profile: {
         name: String,
