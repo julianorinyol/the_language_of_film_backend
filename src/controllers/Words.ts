@@ -2,6 +2,7 @@
 import { Request, Response, Router } from 'express';
 import { OK, BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND } from 'http-status-codes';
 import { Word, WordData } from "../models/Word";
+import { Film } from "../models/Film";
 import { AuthController } from './Auth'
 
 const router = Router();
@@ -50,15 +51,25 @@ export const WordsController = {
         }
     },
     addOrUpdateMany: async (req: Request, res: Response) => {
-        const words = req.body
+        const { sourceKey, sourceType, words } = req.body
+        //todo check if source exists
+        const source = await Film.exists({name: sourceKey})
+
+        if(!source) {
+            return res.status(BAD_REQUEST).json({
+                error: `Source doesnt exist for ${sourceKey}`,
+            });
+        }
+        
         if(words.constructor.name !== 'Array') {
             return res.status(BAD_REQUEST).json({error: {message: "body should be array"}})        
         }
 
         const promises = words.map( async ( wordData:any ) => {
             const translationsIds = await Promise.all(wordData.translations.map(async (translatedWordData:any) => {
-                const  { translations, ...withoutTranslation   } =translatedWordData
+                const  { translations, ...withoutTranslation } = translatedWordData
 
+                // upsert is true, so it creates them if they don't exist. 
                 return Word.findOneAndUpdate({word: translatedWordData.word, language: translatedWordData.language}, { $set: withoutTranslation }, { upsert: true, new: true })
                     .exec()
                     .then((word:any) => {
@@ -79,7 +90,19 @@ export const WordsController = {
             }) 
         })
 
-        return Promise.all(promises).then((completed:any) => {
+        // const addIdsToSource = (words: WordData[]) => {
+        const addIdsToSource = async (words: any[]) => {
+            const ids = words.map((word:any) => word._id)
+            return Film.updateOne(
+                    {name: sourceKey},
+                    // https://docs.mongodb.com/manual/reference/operator/update/addToSet/#each-modifier
+                    { $addToSet: { words: { $each: ids } } }
+                )
+        }
+
+        return Promise.all(promises)
+        .then(addIdsToSource)
+        .then((completed:any) => {
             return res.status(200).json(completed)        
         }).catch((err:any) => {
             console.error(`error creating word`, err)
