@@ -12,6 +12,7 @@ export class AuthController {
         if (!user) {
           return res.status(401).json({ status: "error", code: "unauthorized" });
         } else {
+          req.user = user
           return next();
         }
       })(req, res, next);
@@ -28,6 +29,7 @@ export class AuthController {
       } else {
         const scope = req.baseUrl.split("/").slice(-1)[0];
         const authScope = jwtToken.scope;
+
         if (authScope && authScope.indexOf(scope) > -1) {
           return next();
         }
